@@ -4,9 +4,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>2.0.4</Version>
     <Authors>Joydeep Mitra</Authors>
-    <Description>Fyers API v2</Description>
+    <Description>C# wrapper of the Fyers API v2</Description>
     <Copyright>Copyright © 2021 Joydeep Mitra</Copyright>
     <Company>ArthaChitra</Company>
+    <PackageId>ArthaChitra.FyersAPI</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/arthachitra/FyersAPI</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arthachitra/FyersAPI</RepositoryUrl>
+    <PackageTags>Fyers API</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

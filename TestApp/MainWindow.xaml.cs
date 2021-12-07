@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -163,6 +164,19 @@ namespace TestApp
         }
 
 
+        private Uri uri;
+
+        public Uri Uri
+        {
+            get { return uri; }
+            set 
+            {
+                uri = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+
 
 
         #endregion
@@ -255,8 +269,7 @@ namespace TestApp
             this.fyers.Error += OnSocketerror;
 
             string state = Guid.NewGuid().ToString();
-            wb.Navigate(new Uri($"https://api.fyers.in/api/v2/generate-authcode?client_id={this.User.Key}&redirect_uri={user.RedirectUrl}&response_type=code&state={state}"));
-
+            this.Uri = new Uri($"https://api.fyers.in/api/v2/generate-authcode?client_id={this.User.Key}&redirect_uri={user.RedirectUrl}&response_type=code&state={state}");
         }
 
         #endregion
@@ -532,49 +545,40 @@ namespace TestApp
 
         #region WebBrowser
 
-        WebBrowser wb = null;
-        private void WebBrowser_Loaded(object sender, RoutedEventArgs e)
-        {
-            wb = sender as WebBrowser;
+        
 
-            Silent(wb);
+        private void WebView2_CoreWebView2InitializationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)
+        {
+            
+            if (e.IsSuccess)
+            {
+                Microsoft.Web.WebView2.Wpf.WebView2 webView2 = sender as Microsoft.Web.WebView2.Wpf.WebView2;
+                var cookieManager = webView2?.CoreWebView2?.CookieManager;
+
+                if (cookieManager != null)
+                {
+                    webView2.CoreWebView2.CookieManager.DeleteAllCookies();
+
+                    
+                }
+            } 
         }
 
-        private void EdisWebBrower_Loaded(object sender, RoutedEventArgs e)
-        {
-            Silent(sender as WebBrowser);
-        }
-
-        private void Silent(WebBrowser wb)
-        {
-            if (wb == null)
-                return;
-
-            FieldInfo field = typeof(WebBrowser).GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (field == null)
-                return;
-
-            object obj = field.GetValue(wb);
-            if (obj == null)
-                return;
-
-            obj.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, obj, new object[] { true });
-        }
-
-        private async void WebBrowser_Navigating(object sender, NavigatingCancelEventArgs obj)
+        private async void WebView2_NavigationStarting(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs obj)
         {
             User user = this.User;
             if (user == null)
                 return;
 
-            if (obj == null || obj.Uri == null || string.IsNullOrEmpty(obj.Uri.AbsoluteUri))
+            if (obj == null || string.IsNullOrEmpty(obj.Uri))
                 return;
 
-            Log(obj.Uri.AbsoluteUri);
+            Log(obj.Uri);
 
-            if (obj.Uri.AbsoluteUri.Contains(user.RedirectUrl))
+
+            if (obj.Uri.Contains(user.RedirectUrl))
             {
-                if (this.fyers != null && Fyers.IsValidLogin(obj.Uri.AbsoluteUri, user.Key, user.Secret, out TokenPayload payload))
+                if (this.fyers != null && Fyers.IsValidLogin(obj.Uri, user.Key, user.Secret, out TokenPayload payload))
                 {
                     var response = await this.fyers.GenerateTokenAsync(payload);
 
@@ -588,7 +592,8 @@ namespace TestApp
                     Log("nyet");
                 }
             }
-            else if (obj.Uri.AbsoluteUri.Contains("res://ieframe.dll/navcancl.htm"))
+            //else if (obj.Uri.Contains("res://ieframe.dll/navcancl.htm"))
+            else
             {
                 this.Log("Login failed. Please make sure you have entered a valid API Key and API Secret");
             }
@@ -620,13 +625,18 @@ namespace TestApp
                 recordLst = new List<Recordlst>()
                  {
                      new Recordlst() { isin_code = "INE494B01023", qty = 50},    //TVS Motors
-                     new Recordlst(){ isin_code = "INE476A01014", qty = 1},     //Canara Bank
+                     //new Recordlst(){ isin_code = "INE476A01014", qty = 1},     //Canara Bank
                      //new Recordlst(){ isin_code = "INE009A01021", qty = 1}    //Infosys
                  }
             });
 
             if (response.code == 200 && !string.IsNullOrWhiteSpace(response.data))
             {
+                if (edisWb.CoreWebView2 == null)
+                {
+                    await edisWb.EnsureCoreWebView2Async(null);
+                } 
+                
                 edisWb.NavigateToString(response.data);
             }
         }
@@ -634,7 +644,6 @@ namespace TestApp
 
         public async void GetEdisDetails_Click(object sender, RoutedEventArgs e)
         {
-
             if (this.fyers == null || !this.fyers.IsAuthenticated)
                 return;
 
@@ -653,6 +662,7 @@ namespace TestApp
                 }
             }
         }
+
 
         #endregion
 

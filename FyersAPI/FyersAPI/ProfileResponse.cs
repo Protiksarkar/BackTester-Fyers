@@ -65,6 +65,6 @@ namespace FyersAPI
         /// Number of days until the current password expires
         /// </summary>
         [DataMember(Name = "pwd_to_expire")]
-        public int pwd_to_expire { get; set; }
+        public int? pwd_to_expire { get; set; }
     }
 }

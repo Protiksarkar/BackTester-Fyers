@@ -721,7 +721,7 @@ namespace FyersAPI
         /// </summary>
         /// <param name="pingInterval"></param>
         /// <returns></returns>
-        public async Task<bool> ConnectToDataSocketAsync(int pingInterval = 10)
+        public async Task<bool> ConnectToDataSocketAsync(int pingInterval = 0)
         {
             if (string.IsNullOrEmpty(this.AppId) || string.IsNullOrEmpty(this.accessToken))
                 return false;
@@ -768,7 +768,7 @@ namespace FyersAPI
         /// </summary>
         /// <param name="pingInterval"></param>
         /// <returns></returns>
-        public async Task<bool> ConnectToOrderSocketAsync(int pingInterval = 10)
+        public async Task<bool> ConnectToOrderSocketAsync(int pingInterval = 0)
         {
             if (string.IsNullOrEmpty(this.AppId) || string.IsNullOrEmpty(this.accessToken))
                 return false;
@@ -799,7 +799,7 @@ namespace FyersAPI
             this.orderSocket.MessageReceived += OnOrderMessageReceived;
             this.orderSocket.DataReceived += OnOrderDataReceived;
             this.orderSocket.Error += OnOrderError;
-            
+
             this.orderSocket.AutoSendPingInterval = pingInterval;
             this.orderSocket.EnableAutoSendPing = true;
             
@@ -825,6 +825,7 @@ namespace FyersAPI
 
         private void OnOrderSocketClosed(object sender, EventArgs e)
         {
+            
             this.Closed?.Invoke(this, new FyersEventArgs(MessageType.Order));
         }
 

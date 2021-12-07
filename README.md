@@ -9,6 +9,7 @@ https://www.nuget.org/packages/ArthaChitra.FyersAPI/
 
 ## Requirements
 Windows 7 or above
+
 WebView2 Runtime https://developer.microsoft.com/en-us/microsoft-edge/webview2/
 
 ## Dependencies

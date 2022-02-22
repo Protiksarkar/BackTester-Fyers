@@ -744,10 +744,7 @@ namespace FyersAPI
                 this.dataSocket = null;
             }
 
-            this.dataSocket = new WebSocket($"wss://api.fyers.in/socket/v2/dataSock?access_token={this.AppId}:{this.accessToken}", origin: "https://data.fyers.in");
-            //this.dataSocket = new WebSocket($"wss://data.fyers.in/dataSock?access_token={this.AppId}:{this.accessToken}&user-agent=fyers-api", origin: "https://data.fyers.in");
-
-            //this.dataSocket = new WebSocket("wss://data.fyers.in/dataSock", userAgent: "fyers-api")
+            this.dataSocket = new WebSocket($"wss://api.fyers.in/socket/v2/dataSock?access_token={this.AppId}:{this.accessToken}", origin: "https://api.fyers.in");
 
             this.dataSocket.Opened += OnDataSocketOpened;
             this.dataSocket.Closed += OnDataSocketClosed;
@@ -792,7 +789,7 @@ namespace FyersAPI
                 this.orderSocket = null;
             }
 
-            this.orderSocket = new WebSocket($"wss://data.fyers.in/orderSock?access_token={this.AppId}:{this.accessToken}&user-agent=fyers-api&type=orderUpdate", origin: "https://data.fyers.in");
+            this.orderSocket = new WebSocket($"wss://api.fyers.in/socket/v2/orderSock?type=orderUpdate&access_token={this.AppId}:{this.accessToken}&user-agent=fyers-api", origin: "https://api.fyers.in");
 
             this.orderSocket.Opened += OnOrderSocketOpened;
             this.orderSocket.Closed += OnOrderSocketClosed;

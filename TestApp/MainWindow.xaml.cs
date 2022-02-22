@@ -108,10 +108,14 @@ namespace TestApp
 
         #region Misc
 
+        StreamWriter writer = new StreamWriter("data.txt");
+
         private void Log(string message)
         {
             if (string.IsNullOrEmpty(message))
                 return;
+
+            writer.WriteLine($"{DateTime.Now:HH:mm:ss} - {message}");
 
             this.Dispatcher.InvokeAsync(() =>
             {
@@ -343,7 +347,7 @@ namespace TestApp
                 return;
 
             await this.fyers.SubscribeLevel1(new string[] { "NSE:SBIN-EQ" }); //10100000003045
-
+            //await this.fyers.SubscribeLevel1(new string[] { "MCX:GOLDM22MARFUT" });
         }
 
         private async void Unsubscribe_Click(object sender, RoutedEventArgs e)
@@ -361,6 +365,7 @@ namespace TestApp
                 return;
 
             await this.fyers.SubscribeLevel2(new string[] { "NSE:SBIN-EQ" });
+            //await this.fyers.SubscribeLevel2(new string[] { "MCX:GOLDM22MARFUT" });
         }
 
         private async void UnsubscribeL2_Click(object sender, RoutedEventArgs e)

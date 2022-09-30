@@ -397,7 +397,7 @@ namespace TestApp
             if (this.fyers == null || !this.fyers.IsAuthenticated)
                 return;
 
-            DateTime from = DateTime.Now.AddDays(-360).Date;
+            DateTime from = DateTime.Now.AddDays(-12).Date;
             DateTime to = DateTime.Now.Date.AddDays(1).AddTicks(-1);
 
             var response = await this.fyers.GetHistoricalDataAsync("NSE:SBIN-EQ", "D", from, to);
@@ -669,8 +669,12 @@ namespace TestApp
         }
 
 
+
         #endregion
 
-        
+        private void WatermarkTextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

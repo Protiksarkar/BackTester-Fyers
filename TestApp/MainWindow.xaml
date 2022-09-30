@@ -29,8 +29,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
-                <local:WatermarkTextBox Text="{Binding User.Key, UpdateSourceTrigger=PropertyChanged}" WatermarkText="Enter API Key" Margin="5" />
-                <local:WatermarkTextBox Grid.Column="1" Text="{Binding User.Secret, UpdateSourceTrigger=PropertyChanged}" WatermarkText="Enter API Secret" Margin="5" />
+                <local:WatermarkTextBox Text="{Binding User.Key, UpdateSourceTrigger=PropertyChanged}" WatermarkText="Enter API Key" Margin="5" Loaded="WatermarkTextBox_Loaded" />
+                <local:WatermarkTextBox Grid.Column="1" Text="{Binding User.Secret, UpdateSourceTrigger=PropertyChanged}" WatermarkText="Enter API Secret" Margin="5" Loaded="WatermarkTextBox_Loaded" />
                 <local:WatermarkTextBox Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding User.RedirectUrl, UpdateSourceTrigger=PropertyChanged}" WatermarkText="Enter redirect url" Margin="5" />
                 
                 <Button Grid.Column="2"  Margin="5" Content="Initialize" Click="Initialize_Click" />

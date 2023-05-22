@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TestingConsole.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class initialcreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,11 +13,8 @@ namespace TestingConsole.Migrations
                 name: "Instrument",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Fytoken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SymbolTicker = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SymbolTicker = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Exchange = table.Column<int>(type: "int", nullable: false),
                     Segment = table.Column<int>(type: "int", nullable: false),
                     LotSize = table.Column<int>(type: "int", nullable: false),
@@ -27,28 +24,25 @@ namespace TestingConsole.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Instrument", x => x.Id);
+                    table.PrimaryKey("PK_Instrument", x => x.SymbolTicker);
                 });
 
             migrationBuilder.CreateTable(
                 name: "MarketQuote",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Exchange = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Open = table.Column<float>(type: "real", nullable: false),
-                    High = table.Column<float>(type: "real", nullable: false),
-                    Low = table.Column<float>(type: "real", nullable: false),
-                    Close = table.Column<float>(type: "real", nullable: false),
-                    Volume = table.Column<long>(type: "bigint", nullable: true),
-                    TimeFrame = table.Column<int>(type: "int", nullable: false)
+                    Symbol = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TimeFrame = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Open = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    High = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Low = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Close = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Volume = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MarketQuote", x => x.Id);
+                    table.PrimaryKey("PK_MarketQuote", x => new { x.Symbol, x.TimeFrame, x.Date });
                 });
 
             migrationBuilder.CreateTable(
@@ -60,7 +54,14 @@ namespace TestingConsole.Migrations
                     Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<float>(type: "real", nullable: false)
+                    Price = table.Column<float>(type: "real", nullable: false),
+                    TradeId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Value1 = table.Column<float>(type: "real", nullable: true),
+                    Value2 = table.Column<float>(type: "real", nullable: true),
+                    Value3 = table.Column<float>(type: "real", nullable: true),
+                    Value4 = table.Column<float>(type: "real", nullable: true),
+                    Value5 = table.Column<float>(type: "real", nullable: true),
+                    Value6 = table.Column<float>(type: "real", nullable: true)
                 },
                 constraints: table =>
                 {

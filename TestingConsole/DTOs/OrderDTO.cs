@@ -13,5 +13,13 @@ namespace TestingConsole.DTOs
         public float Price { get; set; }
         [MaxLength(100)]
         public string? TradeId { get; set; }
+
+        public float? Value1 { get; set; }
+        public float? Value2 { get; set; }
+        public float? Value3 { get; set; }
+        public float? Value4 { get; set; }
+        public float? Value5 { get; set; }
+        public float? Value6 { get; set; }
+
     }
 }

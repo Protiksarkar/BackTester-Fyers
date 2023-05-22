@@ -14,7 +14,8 @@ namespace TestingConsole.Other
         public MappingProfile()
         {
             // Add as many of these lines as you need to map your objects
-            CreateMap<MarketQuoteDTO, Quote>();
+            CreateMap<MarketQuoteDTO, Quote>()
+                .ReverseMap();
         }
     }
 }

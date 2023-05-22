@@ -1,6 +1,8 @@
-﻿using Skender.Stock.Indicators;
+﻿using Microsoft.VisualBasic;
+using Skender.Stock.Indicators;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using TestingConsole.DTOs;
 
@@ -9,26 +11,12 @@ namespace TestingConsole
     public static class Utility
     {
 
-        internal static MarketQuoteDTO SampleData(List<MarketQuoteDTO> quotes)
-        {
-            var data = new MarketQuoteDTO();
-            if (quotes.Count > 0)
-            {
-                data.Open = quotes.First().Open;
-                data.Close = quotes.Last().Close;
-                data.High = quotes.Max(x => x.High);
-                data.Low = quotes.Min(x => x.Low);
-                data.Date = quotes.First().Date;
-            }
-            return data;
-        }
-
-        internal static int GetQuantity(int lotSize, float slPoint, float maxRiskAmt = 2000)
+        public static int GetQuantity(int lotSize, float slPoint, float maxRiskAmt = 2000)
         {
             if (lotSize == 0)
                 lotSize = 1;
             int quantity = 0;
-            quantity = ((int)Math.Floor(maxRiskAmt / Math.Abs(slPoint*lotSize)));
+            quantity = ((int)Math.Floor(maxRiskAmt / Math.Abs(slPoint * lotSize)));
             quantity = quantity - (quantity % lotSize);
 
             return quantity;
@@ -39,12 +27,12 @@ namespace TestingConsole
             return LTP > prevHigh;
         }
 
-        internal static bool IsLowBreak(decimal LTP, decimal prevLow)
+        public static bool IsLowBreak(decimal LTP, decimal prevLow)
         {
             return LTP < prevLow;
         }
 
-        internal static string TfToResolution(int tmFrame)
+        public static string TfToResolution(int tmFrame)
         {
             switch (tmFrame)
             {
@@ -62,7 +50,7 @@ namespace TestingConsole
             }
         }
 
-        internal static int ResolutionToTF(string resol)
+        public static int ResolutionToTF(string resol)
         {
             switch (resol)
             {
@@ -92,7 +80,7 @@ namespace TestingConsole
             return keyVals;
         }
 
-        public static Quote GetPrevQuote(ref List<Quote> quotes, DateTime timeStamp, int position, int interval)
+        public static MarketQuoteDTO GetPrevQuote(ref List<MarketQuoteDTO> quotes, DateTime timeStamp, int position, int interval)
         {
             return quotes.FirstOrDefault(x =>
             {
@@ -134,9 +122,13 @@ namespace TestingConsole
             });
         }
 
-        //static MarketQuoteDTO GetLastCandle(ref List<MarketQuoteDTO> candles, DateTime time, int tmFrame)
-        //{
-        //    candles.Where(time)
-        //}
+        public static string GetTimeStamp(DateTime value)
+        {
+            return value.ToString("yyyyMMddHHmmss");
+        }
+        public static DateTime ParseDateTime(string time)
+        {
+            return DateTime.ParseExact(time, "yyyyMMddHHmmss",CultureInfo.InvariantCulture);
+        }
     }
 }

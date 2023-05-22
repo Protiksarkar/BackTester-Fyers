@@ -1,0 +1,13 @@
+﻿[
+	{
+		"Name": "Trend Reversal Strategy",
+		"Description": "Day Trading between 9.16 to 3 pm",
+		"Entry": " entry on n low break and then one high break condition that ma(p)>ma(q) and p<q. Same for downtrend",
+		"Exit": " sl on prev candles low and tp on 1.5 times of sl "
+	},
+	{
+		"Name": "Market Range Indicator",
+		"Description": "(higher high - lower low of last m candles) / (higher high - lower low of last n candle)"
+	},
+
+]

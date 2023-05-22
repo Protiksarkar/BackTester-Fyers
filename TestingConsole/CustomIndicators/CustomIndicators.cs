@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestingConsole.Services
+namespace TestingConsole.CustomIndicators
 {
-    internal class BackTestingService
+    internal class CustomIndicators
     {
     }
 }

@@ -1,239 +1,234 @@
-﻿using AutoMapper;
-using Microsoft.VisualBasic;
-using Skender.Stock.Indicators;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
-using TestingConsole.DBServices;
-using TestingConsole.DTOs;
-using TestingConsole.Services;
+﻿//using AutoMapper;
+//using FyersAPI;
+//using Microsoft.VisualBasic;
+//using Skender.Stock.Indicators;
+//using System.Runtime.InteropServices;
+//using System.Runtime.Intrinsics.X86;
+//using TestingConsole.DBServices;
+//using TestingConsole.DTOs;
+//using TestingConsole.Services;
 
-namespace TestingConsole.Strategy
-{
-    internal class Strategy1
-    {
-        internal StrategyLifecycle strategyState;
-        private TradingRepo repo;
-        private DataService dataService;
-        private List<Quote> quotes;
-        private int tmFrame;
-        private double maxriskAmt;
-        private InstrumentDTO tradingInst;
-        private float capital;
-        private List<Quote> candles;
-        private List<EmaResult> ema20;
-        private List<EmaResult> ema50;
-        private List<EmaResult> ema200;
-        private List<RsiResult> rsi13;
-        private Dictionary<int, bool> orderDict;
-        private decimal sl;
-        private bool isBuyOrder;
-        private OrderDTO placedOrder;
+//namespace TestingConsole.Strategy
+//{
+//    internal class Strategy1
+//    {
+//        internal StrategyLifecycle strategyState;
+//        private BackTestService btService;
+//        private List<MarketQuoteDTO> quotes;
+//        private int interval;
+//        private InstrumentDTO tradingInst;
+//        private float capital;
+//        private List<MarketQuoteDTO> candles;
+//        private List<EmaResult> ema1;
+//        private List<EmaResult> ema2;
+//        private List<EmaResult> ema3;
+//        private List<EmaResult> ema4;
+//        private List<EmaResult> ema5;
+//        private List<RsiResult> rsi;
+//        private Dictionary<int, bool> orderDict;
+//        private decimal sl;
+//        private IMapper mapper;
+//        private bool isBuyOrder;
+//        private OrderDTO placedOrder;
+//        private bool isProfitEntered;
 
-        public Strategy1(TradingRepo repository, DataService dtaService)
-        {
-            repo = repository;
-            dataService = dtaService;
-        }
+//        public Strategy1(TradingRepo repository, BackTestService dtaService, IMapper mpr)
+//        {
+//            btService = dtaService;
+//            placedOrder = new OrderDTO();
+//            orderDict = new Dictionary<int, bool>();
+//            sl = 0;
+//            mapper = mpr;
+//        }
 
-        public void OnRun(List<Quote> qts, int timeFrame, InstrumentDTO tdingInst, float cap = 100000)
-        {
-            quotes = qts;
-            tmFrame = timeFrame;
-            tradingInst = tdingInst;
-            capital = cap;
+//        public void OnRun(List<MarketQuoteDTO> qts, int intvl, InstrumentDTO tdingInst, float cap = 100000)
+//        {
+//            //variable setup
+//            quotes = qts;
+//            interval = intvl;
+//            tradingInst = tdingInst;
+//            capital = cap;
 
-            candles = qts.Aggregate<Quote>(TimeSpan.FromSeconds(timeFrame)).ToList();
-            ema20 = candles.Use(CandlePart.HLC3).GetEma(8).ToList();
-            ema50 = candles.Use(CandlePart.HLC3).GetEma(21).ToList();
-            ema200 = candles.Use(CandlePart.HLC3).GetEma(55).ToList();
-            rsi13 = candles.Use(CandlePart.HLC3).GetRsi(8).ToList();
-            orderDict = new Dictionary<int, bool>();
+//            //indicators preparation
+//            candles = (mapper.Map<IEnumerable<MarketQuoteDTO>>(qts.Aggregate<MarketQuoteDTO>(TimeSpan.FromSeconds(interval)))).ToList();
+//            ema1 = candles.Use(CandlePart.HLC3).GetEma(8).ToList();
+//            ema2 = candles.Use(CandlePart.HLC3).GetEma(20).ToList();
+//            ema3 = candles.Use(CandlePart.HLC3).GetEma(50).ToList();
+//            ema4 = candles.Use(CandlePart.HLC3).GetEma(5).ToList();
+//            ema5 = candles.Use(CandlePart.HLC3).GetEma(3).ToList();
+//            rsi = candles.Use(CandlePart.HLC3).GetRsi(8).ToList();
 
-            Quote quote = null;
-            strategyState = StrategyLifecycle.OPEN;
-            sl = 0;
-            placedOrder = new OrderDTO();
-            foreach (var qt in quotes)
-            {
-                quote = qt;
-                if (quote != null)
-                {
-                    switch (strategyState)
-                    {
-                        case StrategyLifecycle.OPEN:
-                            strategyState = OnStrategyOpen(quote, tradingInst);
-                            break;
-                        case StrategyLifecycle.OPEN_ORDER_PLACED:
-                            strategyState = OnOpenOrderPlaced(quote, tradingInst);
-                            break;
-                        case StrategyLifecycle.POSITION_OPENED:
-                            strategyState = OnPositionOpened(quote);
-                            break;
-                        case StrategyLifecycle.CLOSE_ORDER_PLACED:
-                            strategyState = OnCloseOrderPlaced(quote);
-                            break;
-                        case StrategyLifecycle.POSITION_CLOSED:
-                            strategyState = OnPositionClosed(quote);
-                            break;
-                        case StrategyLifecycle.CLOSED:
-                            strategyState = OnStrategyClose(quote);
-                            break;
-                    }
-                }
-                else
-                {
-                    throw new Exception("Custom exception");
-                }
-            }
-        }
+//            //iterate through each quote
+//            RunIteration();
+//        }
 
+//        public void RunIteration()
+//        {
+//            strategyState = StrategyLifecycle.OPEN;
+//            foreach (var quote in candles)
+//            {
+//                if (quote != null)
+//                {
+//                    switch (strategyState)
+//                    {
+//                        case StrategyLifecycle.OPEN:
+//                            strategyState = EnterTrade(quote, tradingInst);
+//                            break;
+//                        case StrategyLifecycle.OPEN_ORDER_PLACED:
+//                            strategyState = ExitTrade(quote, tradingInst);
+//                            break;
+//                    }
+//                }
+//                else
+//                {
+//                    throw new Exception("Custom exception");
+//                }
+//            }
+//        }
 
-        public StrategyLifecycle OnStrategyOpen(Quote quote, InstrumentDTO inst)
-        {
-            var lastQuote1 = Utility.GetPrevQuote(ref candles, quote.Date, -1, tmFrame);
-            if(lastQuote1==null) 
-                return strategyState;
-            var temp = lastQuote1.Date.TimeOfDay;
+//        public StrategyLifecycle EnterTrade(MarketQuoteDTO quote, InstrumentDTO inst)
+//        {
+//            var lastQuote1 = Utility.GetPrevQuote(ref candles, quote.Date, -1, interval);
+//            if (lastQuote1 == null)
+//                return strategyState;
 
-            var lastQuote2 = Utility.GetPrevQuote(ref candles, quote.Date, -2, tmFrame);
-            var lastQuote3 = Utility.GetPrevQuote(ref candles, quote.Date, -3, tmFrame);
+//            //variable preparation
+//            var lastQuote2 = Utility.GetPrevQuote(ref candles, quote.Date, -2, interval);
+//            var lastQuote3 = Utility.GetPrevQuote(ref candles, quote.Date, -3, interval);
 
-            var ema20Value = ema20.FirstOrDefault(x => x.Date == lastQuote1.Date);
-            var ema50Value = ema50.FirstOrDefault(x => x.Date == lastQuote1.Date);
-            var ema200Value = ema200.FirstOrDefault(x => x.Date == lastQuote1.Date);
-            var rsi13Value = rsi13.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var ema1Value = ema1.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var ema2Value = ema2.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var ema3Value = ema3.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var ema4Value = ema4.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var ema5Value = ema5.FirstOrDefault(x => x.Date == lastQuote1.Date);
+//            var rsi13Value = rsi.FirstOrDefault(x => x.Date == lastQuote1.Date);
 
-            if (lastQuote1 == null || lastQuote2 == null || lastQuote3 == null || ema20Value.Ema == null || ema50Value.Ema == null || ema200Value.Ema == null)
-                return strategyState;
+//            //Data validation
+//            if (lastQuote1 == null || lastQuote2 == null || lastQuote3 == null || ema1Value.Ema == null || ema2Value.Ema == null || ema3Value.Ema == null)
+//                return strategyState;
 
-            var startTime = new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 9, 25, 0);
-            var endTime = new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 15, 0, 0);
-            if (quote.Date >= startTime && quote.Date <= endTime)
-            {
-                if (ema20Value.Ema > ema50Value.Ema && ema50Value.Ema > ema200Value.Ema && (Convert.ToDouble(lastQuote1.Close) > ema50Value.Ema))
-                {
-                    if ((lastQuote1.Low < lastQuote2.Low && lastQuote2.Low < lastQuote3.Low) && Utility.IsHighBreak(quote.High, lastQuote1.High) /*&& rsi13Value.Rsi < 40*/)
-                    {
-                        //buy
-                        sl = lastQuote1.Low;
-                        isBuyOrder = true;
-                        var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle(quote.Close - lastQuote1.Low), capital * 0.02f);
-                        placedOrder = PlaceOrder(inst.Symbol, (MarketQuoteDTO)quote, quantity);
-                        orderDict.Add(placedOrder.Id, true);
-                        return StrategyLifecycle.OPEN_ORDER_PLACED;
-                    }
-                }
-                else if (ema20Value.Ema < ema50Value.Ema && ema50Value.Ema < ema200Value.Ema && (Convert.ToDouble(lastQuote1.Close) < ema50Value.Ema))
-                {
-                    if ((lastQuote1.High > lastQuote2.High && lastQuote2.High > lastQuote3.High) && Utility.IsLowBreak(quote.Low, lastQuote1.Low) /*&& rsi13Value.Rsi > 60*/)
-                    {
-                        //sell
-                        sl = lastQuote1.High;
-                        isBuyOrder = false;
-                        var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle(lastQuote1.High - quote.Close), capital * 0.02f);
-                        placedOrder = PlaceOrder(inst.Symbol, (MarketQuoteDTO)quote, quantity * -1);
-                        orderDict.Add(placedOrder.Id, true);
-                        return StrategyLifecycle.OPEN_ORDER_PLACED;
-                    }
-                }
-            }
-            return strategyState;
-        }
+//            if (ValidEntryTime(quote))
+//            {
+//                if (
 
-        public StrategyLifecycle OnCloseOrderPlaced(Quote marketQuote)
-        {
-            return StrategyLifecycle.CLOSED;
-        }
+//                    (ema1Value.Ema > ema2Value.Ema && ema2Value.Ema > ema3Value.Ema && (Convert.ToDouble(lastQuote1.Close) > ema2Value.Ema))
+//                    && ((lastQuote1.Low < lastQuote2.Low && lastQuote2.Low < lastQuote3.Low) && Utility.IsHighBreak(quote.High, lastQuote1.High) /*&& rsi13Value.Rsi < 40*/)
+//                    //&& (ema5Value.Ema<ema4Value.Ema)
+//                    )
+//                {
+//                    //buy
+//                    PlaceBuyOrder(quote, lastQuote1, inst, (float)ema1Value.Ema, (float)ema2Value.Ema, (float)ema3Value.Ema);
+//                    return StrategyLifecycle.OPEN_ORDER_PLACED;
+//                }
+//                else if (
 
-        public StrategyLifecycle OnOpenOrderPlaced(Quote quote, InstrumentDTO inst)
-        {
-            var lastQuote1 = Utility.GetPrevQuote(ref candles, quote.Date, -1, tmFrame);
+//                    (ema1Value.Ema < ema2Value.Ema && ema2Value.Ema < ema3Value.Ema && (Convert.ToDouble(lastQuote1.Close) < ema2Value.Ema))
+//                    && ((lastQuote1.High > lastQuote2.High && lastQuote2.High > lastQuote3.High) && Utility.IsLowBreak(quote.Low, lastQuote1.Low) /*&& rsi13Value.Rsi > 60*/)
+//                    //&& (ema5Value.Ema>ema4Value.Ema)
+//                    )
+//                {
+//                    //sell
+//                    PlaceSellOrder(quote, lastQuote1, inst, (float)ema1Value.Ema, (float)ema2Value.Ema, (float)ema3Value.Ema);
+//                    return StrategyLifecycle.OPEN_ORDER_PLACED;
+//                }
+//            }
+//            return strategyState;
+//        }
 
-            var endime = new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 15, 10, 0);
-            if (quote.Date > endime)
-            {
-                ExitPosition(quote.Date,quote.Close);
-                orderDict[placedOrder.Id] = false;
-                return StrategyLifecycle.CLOSED;
-            }
-            else if (isBuyOrder)
-            {
-                //if ((quote.Low <= sl) || (quote.Low < lastQuote1.Low))
-                if (
-                    
-                    (quote.Low < sl)
-                    || ((quote.Close < (decimal)placedOrder.Price) && (quote.Date >= placedOrder.TimeStamp.AddSeconds(tmFrame*2)))
-                    || ((quote.Close - Convert.ToDecimal(placedOrder.Price)) >= ((decimal)placedOrder.Price - sl) * 2m) /*|| (quote.Low < lastQuote1.Low)*/
-                    
-                    )
-                {
-                    //sell
-                    ExitPosition(quote.Date,quote.Close);
-                    orderDict[placedOrder.Id] = false;
-                    return StrategyLifecycle.CLOSED;
-                }
-            }
-            else
-            {
-                //if ((quote.High >= sl) || (quote.High > lastQuote1.High))
-                if (
-                    (quote.High > sl)
-                    || ((quote.Close > (decimal)placedOrder.Price) && (quote.Date >= placedOrder.TimeStamp.AddSeconds(tmFrame*2)))
-                    || ((Convert.ToDecimal(placedOrder.Price) - quote.Close) >= (sl - (decimal)placedOrder.Price) * 2m) /*|| (quote.High > lastQuote1.High)*/
-                    )
-                {
-                    //buy
-                    ExitPosition(quote.Date, quote.Close);
-                    orderDict[placedOrder.Id] = false;
-                    return StrategyLifecycle.CLOSED;
-                }
-            }
-            return strategyState;
-        }
+//        public StrategyLifecycle ExitTrade(MarketQuoteDTO quote, InstrumentDTO inst)
+//        {
+//            var lastQuote1 = Utility.GetPrevQuote(ref candles, quote.Date, -1, interval);
 
-        public StrategyLifecycle OnPositionClosed(Quote marketQuote)
-        {
-            return StrategyLifecycle.CLOSED;
-        }
+//            if (ValidExitTime(quote))
+//            {
+//                return ExitPosition(quote.Date, quote.Close);
+//            }
+//            else if (isBuyOrder)
+//            {
 
-        public StrategyLifecycle OnPositionOpened(Quote marketQuote)
-        {
-            return StrategyLifecycle.CLOSED;
-        }
+//                if (quote.Low < sl)
+//                {
+//                    //sell
+//                    return ExitPosition(quote.Date, sl - .1m);
+//                }
+//                else if ((quote.Low < (decimal)placedOrder.Price) && (quote.Date > placedOrder.TimeStamp.AddSeconds(interval * 2)))
+//                {
+//                    return ExitPosition(quote.Date, (decimal)placedOrder.Price - 0.1m);
+//                }
+//                else if ((quote.High - Convert.ToDecimal(placedOrder.Price)) >= ((decimal)placedOrder.Price - sl) * 2m) /*|| (quote.Low < lastQuote1.Low)*/
+//                {
+//                    //sell
+//                    return ExitPosition(quote.Date, (decimal)placedOrder.Price + (((decimal)placedOrder.Price - sl) * 2m) );
+//                }
+//                //|| ((quote.Low < (decimal)placedOrder.Price) && (quote.Date > placedOrder.TimeStamp.AddSeconds(interval*2)))
+//                //|| ((quote.High - Convert.ToDecimal(placedOrder.Price)) >= ((decimal)placedOrder.Price - sl) * 1.5m) /*|| (quote.Low < lastQuote1.Low)*/
 
-        public StrategyLifecycle OnStrategyClose(Quote marketQuote)
-        {
-            return StrategyLifecycle.OPEN;
-        }
+//            }
+//            else
+//            {
 
-        private OrderDTO PlaceOrder(string symbol, MarketQuoteDTO quote, int quantity)
-        {
-            OrderDTO order = new OrderDTO
-            {
-                Symbol = symbol,
-                TimeStamp = quote.Date,
-                Quantity = quantity,
-                Price = Convert.ToSingle(quote.Close),
-            };
-            return dataService.SaveOrder(order);
-        }
+//                if (quote.High > sl)
+//                {
+//                    //buy
+//                    return ExitPosition(quote.Date, sl + .1m);
+//                }
+//                else if ((quote.High > (decimal)placedOrder.Price) && (quote.Date > placedOrder.TimeStamp.AddSeconds(interval * 2)))
+//                {
+//                    return ExitPosition(quote.Date, (decimal)placedOrder.Price+ 0.1m);
+//                }
+//                else if ((Convert.ToDecimal(placedOrder.Price) - quote.Low) >= (sl - (decimal)placedOrder.Price) * 2m)
+//                {
+//                    //buy
+//                    return ExitPosition(quote.Date, (decimal)placedOrder.Price - (sl - (decimal)placedOrder.Price) * 2m);
+//                }
+//                //|| ((quote.High > (decimal)placedOrder.Price) && (quote.Date > placedOrder.TimeStamp.AddSeconds(interval*2)))
+//                //|| ((Convert.ToDecimal(placedOrder.Price) - quote.Low) >= (sl - (decimal)placedOrder.Price) * 1.5m) /*|| (quote.High > lastQuote1.High)*/
+//            }
+//            return strategyState;
+//        }
 
-        private bool ExitPosition(DateTime date,decimal price)
-        {
-            bool result = false;
-            if (placedOrder != null)
-            {
-                OrderDTO order = new OrderDTO();
-                order.Symbol = placedOrder.Symbol;
-                order.Id = 0;
-                order.TimeStamp = date.Date;
-                order.Quantity = placedOrder.Quantity * -1;
-                order.Price = Convert.ToSingle(price);
-                order.TradeId = placedOrder.Id.ToString();
-                repo.SaveOrder(order);
-                result = true;
-            }
-            return result;
-        }
-    }
-}
+//        private bool ValidEntryTime(MarketQuoteDTO quote)
+//        {
+//            var startTime = new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 9, 25, 0);
+//            var endTime = new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 15, 0, 0);
+//            return (quote.Date >= startTime && quote.Date <= endTime);
+//        }
+
+//        private bool ValidExitTime(MarketQuoteDTO quote)
+//        {
+//            return quote.Date >= new DateTime(quote.Date.Year, quote.Date.Month, quote.Date.Day, 15, 10, 0);
+//        }
+
+//        private void PlaceBuyOrder(MarketQuoteDTO quote, MarketQuoteDTO lastQuote1, InstrumentDTO inst, float ema1, float ema2, float ema3)
+//        {
+//            sl = lastQuote1.Low;
+//            isBuyOrder = true;
+//            //var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle(lastQuote1.High - quote.Close), capital * 0.02f);
+//            //placedOrder = btService.PlaceEntryOrder(inst.SymbolTicker, (MarketQuoteDTO)quote, quantity * -1);
+//            var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle((lastQuote1.High + .1m) - sl), capital * 0.02f);
+//            placedOrder = btService.PlaceEntryOrder(inst.SymbolTicker, quote.Date, (lastQuote1.High + .1m), quantity, sl, ema1, ema2, ema3);
+//            isProfitEntered = false;
+//            //orderDict.Add(placedOrder.Id, true);
+//        }
+
+//        private void PlaceSellOrder(MarketQuoteDTO quote, MarketQuoteDTO lastQuote1, InstrumentDTO inst, float ema1, float ema2, float ema3)
+//        {
+//            sl = lastQuote1.High;
+//            isBuyOrder = false;
+//            //var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle(lastQuote1.High - quote.Close), capital * 0.02f);
+//            //placedOrder = btService.PlaceEntryOrder(inst.SymbolTicker, (MarketQuoteDTO)quote, quantity * -1);
+//            var quantity = Utility.GetQuantity(inst.LotSize, Convert.ToSingle(sl - (lastQuote1.Low - 0.1m)), capital * 0.02f);
+//            placedOrder = btService.PlaceEntryOrder(inst.SymbolTicker, quote.Date, (lastQuote1.Low - 0.1m), quantity * -1, sl, ema1, ema2, ema3);
+//            isProfitEntered = false;
+//            //orderDict.Add(placedOrder.Id, true);
+//        }
+
+//        private StrategyLifecycle ExitPosition(DateTime time, decimal price)
+//        {
+//            btService.PlaceExitOrder(placedOrder, time, price);
+//            isProfitEntered = false;
+
+//            return StrategyLifecycle.OPEN;
+//        }
+//    }
+//}

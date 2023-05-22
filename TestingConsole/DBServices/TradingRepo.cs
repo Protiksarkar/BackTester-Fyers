@@ -1,18 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
-using System.Linq;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq.Expressions;
 using System.Xml;
 using TestingConsole.DTOs;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace TestingConsole.DBServices
 {
     public class TradingRepo
     {
-        private readonly IDbContextFactory <TradingDBContext> _dbContextFactory;
+        private readonly IDbContextFactory<TradingDBContext> _dbContextFactory;
 
         public TradingRepo(IDbContextFactory<TradingDBContext> dbContextFactory)
         {
@@ -52,17 +49,10 @@ namespace TestingConsole.DBServices
         {
             using (var _context = _dbContextFactory.CreateDbContext())
             {
-                //var uniqueQuotes = quotes.Where(x => !_context.MarketQuote.Any(y => y.Symbol == x.Symbol && y.Date == x.Date));
-                var uniqueQuotes = quotes.ExceptBy(_context.MarketQuote.Select(x => new { x.Symbol, x.Date }), y => new { y.Symbol, y.Date });
-                await _context.MarketQuote.AddRangeAsync(uniqueQuotes);
-                //var result = _context.MarketQuote.AsEnumerable()
-                //    .GroupBy(s => new
-                //    {
-                //        s.Symbol,
-                //        s.TimeStamp
-                //    })
-                //    .SelectMany(grp => grp.Skip(1)).ToList();
-                //_context.MarketQuote.AddRange(uniqueQuotes);
+                var newData = quotes.Where(quote => !_context.MarketQuote.Any(dbQuote => dbQuote.Symbol == quote.Symbol && dbQuote.TimeFrame == quote.TimeFrame && dbQuote.Date == quote.Date));
+
+                _context.MarketQuote.AddRange(newData);
+
                 await _context.SaveChangesAsync();
             }
         }
@@ -131,6 +121,14 @@ namespace TestingConsole.DBServices
             }
         }
 
+        public List<OrderDTO> GetOrders()
+        {
+            using (var _context = _dbContextFactory.CreateDbContext())
+            {
+                return _context.Order.ToList<OrderDTO>();
+            }
+        }
+
         public List<OrderDTO> GetOrders(DateTime from, DateTime to, string? symbol)
         {
             using (var _context = _dbContextFactory.CreateDbContext())
@@ -152,3 +150,4 @@ namespace TestingConsole.DBServices
         }
     }
 }
+

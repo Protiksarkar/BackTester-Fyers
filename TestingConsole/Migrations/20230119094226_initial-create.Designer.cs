@@ -12,8 +12,8 @@ using TestingConsole.DBServices;
 namespace TestingConsole.Migrations
 {
     [DbContext(typeof(TradingDBContext))]
-    [Migration("20220927205030_OrderDtoUpdated2")]
-    partial class OrderDtoUpdated2
+    [Migration("20230119094226_initial-create")]
+    partial class initialcreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,21 +26,14 @@ namespace TestingConsole.Migrations
 
             modelBuilder.Entity("TestingConsole.DTOs.InstrumentDTO", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.Property<string>("SymbolTicker")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Exchange")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("Expiry")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Fytoken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("LotSize")
                         .HasColumnType("int");
@@ -58,28 +51,24 @@ namespace TestingConsole.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SymbolTicker")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("SymbolTicker");
 
                     b.ToTable("Instrument");
                 });
 
             modelBuilder.Entity("TestingConsole.DTOs.MarketQuoteDTO", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("Symbol")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("TimeFrame")
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<decimal>("Close")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("High")
                         .HasColumnType("decimal(18,2)");
@@ -90,17 +79,10 @@ namespace TestingConsole.Migrations
                     b.Property<decimal>("Open")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TimeFrame")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Volume")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Symbol", "TimeFrame", "Date");
 
                     b.ToTable("MarketQuote");
                 });
@@ -129,6 +111,24 @@ namespace TestingConsole.Migrations
                     b.Property<string>("TradeId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<float?>("Value1")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Value2")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Value3")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Value4")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Value5")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Value6")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 

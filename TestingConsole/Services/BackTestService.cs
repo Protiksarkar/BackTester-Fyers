@@ -11,63 +11,13 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TestingConsole.Services
 {
-    public class DataService
+    public class BackTestService
     {
         private TradingRepo repo;
-        private Fyers fyers;
 
-        public DataService(TradingRepo tdRepo,Fyers fy)
+        public BackTestService(TradingRepo tdRepo)
         {
             repo = tdRepo;
-            fyers = fy;
-        }
-        public void saveQuotes(List<string> symbols, DateTime from, DateTime to, string resolution)
-        {
-            List<Task> tasks = new List<Task>();
-            foreach (var symbol in symbols)
-            {
-                if (string.IsNullOrEmpty(symbol))
-                    return;
-
-                DateTime toDate = from;
-                bool flag = true;
-
-                while (flag)
-                {
-                    toDate = toDate.AddDays(90);
-                    HistoryResponse result;
-                    if (toDate < to)
-                    {
-                        result = fyers.GetHistoricalDataAsync(symbol, resolution, toDate.AddDays(-90), toDate).Result;
-                    }
-                    else
-                    {
-                        result = fyers.GetHistoricalDataAsync(symbol, resolution, toDate.AddDays(-90), to).Result;
-                        flag = false;
-                    }
-
-                    var data = result.candles;
-                    List<MarketQuoteDTO> marketQuotes = data.Select(x =>
-                    {
-                        return new MarketQuoteDTO()
-                        {
-                            Symbol = symbol,
-                            Date = 
-                            TimeZoneInfo.ConvertTimeFromUtc(DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(x[0])).DateTime, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
-                            Open = Convert.ToDecimal(x[1]),
-                            High = Convert.ToDecimal(x[2]),
-                            Low = Convert.ToDecimal(x[3]),
-                            Close = Convert.ToDecimal(x[4]),
-                            Volume = Convert.ToDecimal(x[5]),
-                            TimeFrame = Utility.ResolutionToTF(resolution)
-                            
-                    };
-                    }).ToList();
-
-                    tasks.Add(repo.UpdateQuotesAsync(marketQuotes));
-                }
-            }
-            Task.WaitAll(tasks.ToArray());
         }
         public List<MarketQuoteDTO> GetQuotes(string symbol, DateTime from, DateTime to, int tmFrame)
         {
@@ -93,7 +43,6 @@ namespace TestingConsole.Services
 
                         instr = new InstrumentDTO
                         {
-                            Fytoken = values[0],
                             Symbol = values[1],
                             SymbolTicker = values[9],
                             Exchange = (Exchanges)Convert.ToInt32(values[10]),
@@ -122,17 +71,7 @@ namespace TestingConsole.Services
         {
             return repo.GetInstrument(symbol);
         }
-
-        public OrderDTO SaveOrder(OrderDTO order)
-        {
-            if (string.IsNullOrEmpty(order.TradeId))
-            {
-                var ord = repo.SaveOrder(order);
-                return UpdateOrder(ord);
-            }
-            else
-                return repo.SaveOrder(order);
-        }
+        
         public OrderDTO UpdateOrder(OrderDTO order)
         {
             order.TradeId = order.Id.ToString();
@@ -148,19 +87,33 @@ namespace TestingConsole.Services
             return ids.Select(x => repo.GetOrder(x)).ToList();
         }
 
-        private OrderDTO PlaceOrder(string symbol, MarketQuoteDTO quote, int quantity)
+        public OrderDTO PlaceEntryOrder(string symbol, DateTime time,decimal price, int quantity,
+            float? value1 = null, float? value2 = null, float? value3 = null, float? value4 = null, float? value5 = null, float? value6 = null)
         {
             OrderDTO order = new OrderDTO
             {
                 Symbol = symbol,
-                TimeStamp = quote.Date,
+                TimeStamp = time,
                 Quantity = quantity,
-                Price = Convert.ToSingle(quote.Close),
+                Price = Convert.ToSingle(price),
+                Value1 = value1,
+                Value2 = value2,
+                Value3 = value3,
+                Value4 = value4,
+                Value5 = value5,
+                Value6 = value6,
             };
-            return SaveOrder(order);
+
+            if (string.IsNullOrEmpty(order.TradeId))
+            {
+                var ord = repo.SaveOrder(order);
+                return UpdateOrder(ord);
+            }
+            else
+                return repo.SaveOrder(order);
         }
 
-        private bool ExitPosition(DateTime date, decimal price, OrderDTO placedOrder)
+        public bool PlaceExitOrder(OrderDTO placedOrder, DateTime date, decimal price)
         {
             bool result = false;
             if (placedOrder != null)
@@ -168,7 +121,7 @@ namespace TestingConsole.Services
                 OrderDTO order = new OrderDTO();
                 order.Symbol = placedOrder.Symbol;
                 order.Id = 0;
-                order.TimeStamp = date.Date;
+                order.TimeStamp = date;
                 order.Quantity = placedOrder.Quantity * -1;
                 order.Price = Convert.ToSingle(price);
                 order.TradeId = placedOrder.Id.ToString();

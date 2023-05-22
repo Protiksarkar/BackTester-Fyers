@@ -5,10 +5,11 @@ namespace TestingConsole.DBServices
 {
     public class TradingDBContext : DbContext
     {
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-        //{
-        //    optionsBuilder.UseSqlServer(@"Server=PSARKAR02\SQLEXPRESS;Database=TradingDB;Trusted_Connection=True;");
-        //}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MarketQuoteDTO>()
+                .HasKey(i=> new {i.Symbol,i.TimeFrame,i.Date});
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

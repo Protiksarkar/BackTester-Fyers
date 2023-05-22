@@ -1,6 +1,12 @@
-﻿using FyersAPI;
+﻿using AutoMapper;
+using FyersAPI;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TestingConsole.DBServices;
+using TestingConsole.DTOs;
 using TestingConsole.Models;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace TestingConsole.Services
 {
@@ -8,11 +14,13 @@ namespace TestingConsole.Services
     {
         private TradingRepo repo;
         private Fyers fyers;
+        private IMapper mapper;
 
-        public TradingService(TradingRepo tdRepo, Fyers fyrs)
+        public TradingService(TradingRepo tdRepo, Fyers fyrs, IMapper mpr)
         {
             repo = tdRepo;
             fyers = fyrs;
+            mapper = mpr;
         }
 
         public string PlaceOrder()
@@ -73,5 +81,62 @@ namespace TestingConsole.Services
                 Console.WriteLine("Login failed. Please make sure you have entered a valid API Key and API Secret");
             }
         }
+
+        public void saveQuotes(List<string> symbols, DateTime from, DateTime to, string resolution)
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (var symbol in symbols)
+            {
+                if (string.IsNullOrEmpty(symbol))
+                    return;
+
+                DateTime toDate = from;
+                bool flag = true;
+
+                while (flag)
+                {
+                    toDate = toDate.AddDays(90);
+                    HistoryResponse result;
+                    if (toDate < to)
+                    {
+                        result = fyers.GetHistoricalDataAsync(symbol, resolution, toDate.AddDays(-90), toDate).Result;
+                    }
+                    else
+                    {
+                        result = fyers.GetHistoricalDataAsync(symbol, resolution, toDate.AddDays(-90), to).Result;
+                        flag = false;
+                    }
+                    
+                    if(!result.s.Equals("ok",StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        throw new Exception(result.message);
+                    }
+
+                    var data = result.candles;
+                    List<MarketQuoteDTO> marketQuotes = data.Select(x =>
+                    {
+                        return new MarketQuoteDTO()
+                        {
+                            Symbol = symbol,
+                            Date =
+                            TimeZoneInfo.ConvertTimeFromUtc(DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(x[0])).DateTime, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
+                            Open = Convert.ToDecimal(x[1]),
+                            High = Convert.ToDecimal(x[2]),
+                            Low = Convert.ToDecimal(x[3]),
+                            Close = Convert.ToDecimal(x[4]),
+                            Volume = Convert.ToDecimal(x[5]),
+                            TimeFrame = Utility.ResolutionToTF(resolution)
+
+                        };
+                    }).ToList();
+
+                    tasks.Add(repo.UpdateQuotesAsync(marketQuotes));
+                }
+            }
+            Task.WaitAll(tasks.ToArray());
+        }
+
+
     }
 }
+
